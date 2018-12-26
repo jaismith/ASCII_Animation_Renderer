@@ -1,18 +1,68 @@
 // main program file for ascii renderer
 
+import java.lang.Runnable;
+
 class Main {
     public static void main(String[] args) {
         Canvas newCanvas = new Canvas(20, 10);
 
-        newCanvas.togglePoint(5, 5);
-        newCanvas.drawBorder(1);
+        Render renderer = new Render(newCanvas);
 
-        for(int i = 0; i < 5; i++) {
-            System.out.println(newCanvas);
+        int x = 2;
+        int delta = 1;
 
-            newCanvas.returnCursor();
+        while(true) {
+            synchronized(renderer) {
+                newCanvas.clear();
+
+                newCanvas.drawBorder(1);
+                newCanvas.togglePoint(x, 4);
+                newCanvas.togglePoint(x, 5);
+
+                x += delta;
+
+                if(x < 2 || x > 20 - 3) {
+                    delta *= -1;
+                }
+
+                renderer.notify();
+            }
+
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                System.out.println("Main thread interrupted");
+            }
         }
+    }
+}
 
-        System.out.println(newCanvas);
+class Render implements Runnable {
+    Thread renderThread;
+    Canvas canvas;
+
+    public Render(Canvas canvas) {
+        this.canvas = canvas;
+
+        renderThread = new Thread(this, "Render Thread");
+        System.out.printf("Render thread created: %s\n", renderThread);
+        renderThread.start();
+    }
+
+    public void run() {
+        while(true) {
+            synchronized(this) {
+                try {
+                    wait();
+
+                    System.out.println(canvas);
+                    canvas.returnCursor();
+        
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    System.out.printf("Render thread %s interrupted.\n", renderThread);
+                }
+            }
+        }
     }
 }

@@ -54,6 +54,14 @@ class Canvas {
         }
     }
 
+    public void clear() {
+        for(int y = 0; y < height; y++) {
+            for(int x = 0; x < width; x++) {
+                array[x][y] = false;
+            }
+        }
+    }
+
     public void togglePoint(int x, int y) {
         array[x][y] = !array[x][y];
     }
